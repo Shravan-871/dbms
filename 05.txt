@@ -1,0 +1,157 @@
+============================================================================================================================
+"05.Consider the following database for a banking enterprise"
+============================================================================================================================
+
+CREATE TABLE BRANCH (
+    Branch_name VARCHAR(255) PRIMARY KEY,
+    Branch_city VARCHAR(255),
+    Assets Numeric(10,2)
+);
+
+CREATE TABLE ACCOUNT (
+    Accno INT PRIMARY KEY,
+    Branch_name VARCHAR(255) REFERENCES BRANCH(branch_name) ON DELETE CASCADE,
+    Balance Numeric(10,2) 
+);
+
+CREATE TABLE CUSTOMER (
+    Customer_name VARCHAR(255) PRIMARY KEY,
+    Customer_street VARCHAR(255),
+    Customer_city VARCHAR(255)
+);
+
+CREATE TABLE LOAN (
+    Loan_number INT PRIMARY KEY,
+    Branch_name VARCHAR(255) REFERENCES BRANCH(Branch_name) ON DELETE CASCADE,
+    Amount Numeric(10,2) 
+);
+
+CREATE TABLE DEPOSITOR (
+    Customer_name VARCHAR(255) REFERENCES CUSTOMER(Customer_name) ON DELETE CASCADE,
+    Accno INT REFERENCES ACCOUNT(Accno) ON DELETE CASCADE,
+    PRIMARY KEY (Customer_name, Accno) 
+);
+
+CREATE TABLE BORROWER (
+    Customer_name VARCHAR(255) REFERENCES CUSTOMER(Customer_name) ON DELETE CASCADE,
+    Loan_number INT REFERENCES LOAN(Loan_number) ON DELETE CASCADE,
+    PRIMARY KEY (Customer_name, Loan_number)
+);
+
+
+
+
+-- Inserting data into BRANCH table --
+
+INSERT INTO BRANCH VALUES 
+('mgroad','bangalore',20000),
+('borivali','mumbai',2000),
+('banashankari','bangalore',45000),
+('eastwing','bombay',1000),
+('indiranagar','bangalore',500);
+
+-- Inserting data into ACCOUNT table --
+
+INSERT INTO ACCOUNT VALUES
+(4,'borivali', 50000),
+(22,'indiranagar', 500),
+(13, 'indiranagar', 10000),
+(45, 'banashankari', 30000),
+(12, 'mgroad', 200000),
+(15, ‘banashankari’, 25000);
+
+
+-- Inserting data into CUSTOMER table --
+
+INSERT INTO CUSTOMER VALUES
+('Tarun', 'spooner st.', 'bangalore'),
+('saqeeb', 'main road', 'shimoga'),
+('arjun', 'biker st.', 'mumbai'),
+('john', 'waltress. st', 'bangalore'),
+('ashish', 'noName st.', 'bangalore');
+
+
+-- Inserting data into LOAN table --
+
+INSERT INTO LOAN VALUES
+(1, 'borivali', 20000),
+(2, 'borivali', 300000),
+(3, 'mgroad', 4500000),
+(4, 'banashankari', 900000),
+(5, 'mgroad', 400000);
+
+
+-- Inserting data into DEPOSITOR table --
+
+INSERT INTO DEPOSITOR VALUES
+('Tarun', 22), 
+('saqeeb', 13), 
+('arjun', 45), 
+('john', 12),
+('ashish', 4),
+(‘arjun’, 15);
+
+-- Inserting data into BORROWER table --
+
+INSERT INTO BORROWER VALUES
+('Tarun', 2),
+('saqeeb', 3), 
+('saqeeb', 4), 
+('john', 5), 
+('ashish', 1);
+
+
+
+-- SQL QUERIES --
+
+
+
+SELECT D.customer_name
+FROM DEPOSITOR D, ACCOUNT A
+WHERE 	D.Accno = A.Accno AND
+	A.branch_name =  'banashankari'
+GROUP BY D.Customer_name
+HAVING COUNT(D.Accno) >= 2;
+
+
+
+SELECT D.Customer_name
+FROM ACCOUNT A, BRANCH B, DEPOSITOR D
+WHERE	B.Branch_name=A.Branch_name AND
+	A.Accno=D.Accno AND
+	B.Branch_city='mumbai'
+GROUP BY D.Customer_name
+HAVING COUNT(distinct B.Branch_name)=(
+					SELECT COUNT(Branch_name)
+					FROM BRANCH
+					WHERE Branch_city='mumbai');
+
+
+
+
+DELETE FROM ACCOUNT
+WHERE branch_name IN (	SELECT branch_name 
+			FROM BRANCH 
+			WHERE branch_city = 'mumbai');
+select * from ACCOUNT;
+
+
+
+
+SELECT D.Customer_name
+FROM DEPOSITOR D, ACCOUNT A
+WHERE 	D.Accno = A.Accno AND
+ 	A.Branch_name = 'MG ROAD';
+
+
+
+
+SELECT B.Customer_name, L.Loan_number, L.amount
+FROM BORROWER B, LOAN L
+WHERE 	B.Loan_number = L.Loan_number
+	L.Branch_name = 'MG ROAD';
+
+SELECT B.Customer_name
+FROM BORROWER B, LOAN L
+WHERE 	B.Loan_number = L.Loan_number
+	L.Branch_name = 'MG ROAD';

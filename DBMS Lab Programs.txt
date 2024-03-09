@@ -1,0 +1,702 @@
+============================================================================================================================
+"01.Consider the following schema for a Library Database"
+============================================================================================================================
+
+CREATE TABLE BOOK (
+    Book_id INT PRIMARY KEY,
+    Title VARCHAR(20),
+    Publisher_Name VARCHAR(20),
+    Pub_Year INT
+);
+
+CREATE TABLE LIBRARY_BRANCH (
+    Branch_id INT PRIMARY KEY,
+    Branch_Name VARCHAR(255),
+    Address VARCHAR(255)
+);
+
+CREATE TABLE PUBLISHER (
+    Pub_id INT PRIMARY KEY,
+    Name VARCHAR(20),
+    Address VARCHAR(20),
+    Phone VARCHAR(10)
+);
+
+CREATE TABLE BOOK_AUTHORS (
+    Book_id INT,
+    Author_Name VARCHAR(255),
+    PRIMARY KEY (Book_id, Author_Name),
+    FOREIGN KEY (Book_id) REFERENCES BOOK(Book_id) ON DELETE CASCADE
+);
+
+
+CREATE TABLE BOOK_COPIES (
+    Book_id INT REFERENCES BOOK(Book_id) ON DELETE CASCADE,
+    Branch_id INT REFERENCES LIBRARY_BRANCH(Branch_id) ON DELETE CASCADE,
+    No_of_Copies INT,
+    PRIMARY KEY (Book_id, Branch_id)
+);
+
+CREATE TABLE BOOK_LENDING (
+    Book_id INT REFERENCES BOOK(Book_id) ON DELETE CASCADE,
+    Branch_id INT REFERENCES LIBRARY_BRANCH(Branch_id) ON DELETE CASCADE,
+    Card_No INT,
+    Date_Out DATE,
+    Due_Date DATE,
+    PRIMARY KEY (Book_id, Branch_id, Card_No, Date_Out)
+);
+
+
+
+-- Inserting data into BOOK table --
+
+INSERT INTO BOOK VALUES (001, ‘MCGRAW-HILL’, ‘GANGA’, 2001);
+INSERT INTO BOOK VALUES (002, ‘MY ARTEMIS’, ‘KVS’, 2004);
+INSERT INTO BOOK VALUES (003, ‘CHEMISTRY VOL 1’, ‘WESTLAND’, 2006);
+INSERT INTO BOOK VALUES (004, ‘UPRISING’, ‘RUPA’, 2018);
+INSERT INTO BOOK VALUES (005, ‘CHEMISTRY VOL 2’, ‘WESTLAND’, 2021);
+
+
+-- Inserting data into LIBRARY_BRANCH table --
+
+INSERT INTO LIBRARY_BRANCH VALUES (101, ‘BOOK AXIS', ‘BANGALORE’);
+INSERT INTO LIBRARY_BRANCH VALUES (102, ‘BOOK SQUARE', ‘PUNE’);
+INSERT INTO LIBRARY_BRANCH VALUES (103, ‘CLAUS BOOKS', ‘MUMBAI’);
+INSERT INTO LIBRARY_BRANCH VALUES (104, ‘COMIC CON', ‘PUNE’);
+INSERT INTO LIBRARY_BRANCH VALUES (105, ‘FANDOM', ‘BANGALORE’);
+
+
+-- Inserting data into PUBLISHER table --
+
+INSERT INTO PUBLISHER VALUES (501, ‘KVS’, ‘BANGALORE’, 9535616745);
+INSERT INTO PUBLISHER VALUES (502, ‘WESTLAND’, PUNE’, 8768916745);
+INSERT INTO PUBLISHER VALUES (503, ‘RUPA’, ‘BANGALORE’, 6478989715);
+INSERT INTO PUBLISHER VALUES (504, ‘GANGA’, ‘MUMBAI’, 9876985645);
+INSERT INTO PUBLISHER VALUES (505, ‘HACHETTE’, ‘MATTUR’, 7013458745);
+
+-- Inserting data into BOOK_AUTHORS table --
+
+INSERT INTO BOOK_AUTHORS VALUES (001, ‘ASHISH C’);
+INSERT INTO BOOK_AUTHORS VALUES (002, ‘ANEESHA’);
+INSERT INTO BOOK_AUTHORS VALUES (003, ‘ADITYA KUL C’);
+INSERT INTO BOOK_AUTHORS VALUES (004, ‘SAQUIB M’);
+INSERT INTO BOOK_AUTHORS VALUES (005, ‘ARJUN S’);
+
+
+-- Inserting data into BOOK_COPIES table --
+
+INSERT INTO BOOK_COPIES VALUES (001, 102, 40);
+INSERT INTO BOOK_COPIES VALUES (002, 101, 18);
+INSERT INTO BOOK_COPIES VALUES (003, 104, 53);
+INSERT INTO BOOK_COPIES VALUES (004, 103, 4);
+INSERT INTO BOOK_COPIES VALUES (005, 105, 20);
+
+
+-- Inserting data into BOOK_LENDING table
+
+INSERT INTO BOOK_LENDING VALUES (001, 101, 5001, '21-SEP-2021', '19-OCT-2021');
+INSERT INTO BOOK_LENDING VALUES (002, 102, 5002, '07-JAN-2017', '18-MAY-2017');
+INSERT INTO BOOK_LENDING VALUES (003, 102, 5002, '02-FEB-2017', '22-MAR-2020');
+INSERT INTO BOOK_LENDING VALUES (004, 102, 5002, '14-MAR-2017', '08-MAY-2019');
+INSERT INTO BOOK_LENDING VALUES (005, 104, 5005, '18-JUN-2020', '14-AUG-2021');
+
+
+
+-- SQL QUERIES --
+
+
+SELECT  B.BOOK_ID,TITLE,PUBLISHER_NAME,AUTHOR_NAME, NO_OF_COPIES
+FROM BOOK B, BOOK_AUTHORS BA, BOOK_COPIES BC, LIBRARY_BRANCH LB
+WHERE 	B.BOOK_ID = BC.BOOK_ID AND 
+	B.BOOK_ID = BA.BOOK_ID AND
+	BC.BRANCH_ID = LB.BRANCH_ID
+
+
+
+
+SELECT Card_No
+FROM BOOK_LENDING
+WHERE	Date_Out > '01-JAN-2017' AND  
+	Date_Out < '30-JUN-2017'
+GROUP BY Card_No
+HAVING COUNT(*) > 3;
+
+
+
+
+DELETE FROM BOOK 
+      	WHERE Book_id = 1;
+
+
+
+
+CREATE VIEW V_PUBLICATION 
+ AS
+	SELECT PUB_YEAR 
+	FROM BOOK;
+SELECT * FROM V_PUBLICATION;
+
+
+
+
+
+CREATE VIEW BOOK_AVAILABLE 
+ AS
+	SELECT B.Book_id, B.Title, C.No_of_Copies
+	FROM BOOK B, LIBRARY_BRANCH L, BOOK_COPIES C
+	WHERE  B.Book_id = C.Book_id AND
+	       L.BRANCH_ID = C.BRANCH_ID
+;
+
+
+
+
+============================================================================================================================
+"02.Consider the following schema for a Order Database"
+============================================================================================================================
+
+CREATE TABLE SALESMAN (
+    Salesman_id INT PRIMARY KEY,
+    Name VARCHAR(255),
+    City VARCHAR(255),
+    Commission DECIMAL(10, 2)
+);
+
+CREATE TABLE CUSTOMER (
+    Customer_id INT PRIMARY KEY,
+    Cust_Name VARCHAR(255),
+    Cust_City VARCHAR(255),
+    Grade INT,
+    Salesman_id INT REFERENCES SALESMAN(Salesman_id) ON DELETE CASCADE
+);
+
+CREATE TABLE ORDERS (
+    Ord_No INT PRIMARY KEY,
+    Purchase_Amt DECIMAL(10, 2),
+    Ord_Date DATE,
+    Customer_id INT REFERENCES CUSTOMER(Customer_id) ON DELETE CASCADE,
+    Salesman_id INT REFERENCES SALESMAN(Salesman_id) ON DELETE CASCADE 
+);
+
+
+
+
+
+
+-- Inserting data into SALESMAN table --
+
+INSERT INTO SALESMAN VALUES (1000, 'VARSHA', 'BANGALORE', 8000 );
+INSERT INTO SALESMAN VALUES (1001, 'MOHIT', 'PUNE', 6500 );
+INSERT INTO SALESMAN VALUES (1002, 'RUBIN', 'CHENNAI', 10500 );
+INSERT INTO SALESMAN VALUES (1003, 'SAQUIB', 'BANGALORE', 12000 );
+INSERT INTO SALESMAN VALUES (1004, 'KARTHIK', 'BANGALORE', 18000 );
+
+-- Inserting data into CUSTOMER table --
+
+INSERT INTO CUSTOMER VALUES (1, 'INFOSYS', 'BANGALORE', 2, 1000);
+INSERT INTO CUSTOMER VALUES (2, 'WIPRO', 'PUNE', 4, 1000);
+INSERT INTO CUSTOMER VALUES (3, 'ACCENTURE', 'CHENNAI', 3, 1002);
+INSERT INTO CUSTOMER VALUES (4, 'GOLDMAN SACHS', 'BANGALORE', 2, 1003);
+INSERT INTO CUSTOMER VALUES (5, 'JP MORGAN', 'BANGALORE', 4, 1002);
+
+-- Inserting data into ORDERS table --
+
+INSERT INTO ORDERS VALUES (501, 50000, '21-OCT-2021', 1, 1000);
+INSERT INTO ORDERS VALUES (502, 1000, '05-JUN-2020', 2, 1002);
+INSERT INTO ORDERS VALUES (503, 300000, '05-JUN-2020', 2, 1003);
+INSERT INTO ORDERS VALUES (504, 10000, '16-SEP-2019', 3, 1000);
+INSERT INTO ORDERS VALUES (505, 90000, '12-MAR-2022', 5, 1004);
+
+
+
+-- SQL QUERIES --
+
+
+
+SELECT COUNT(Customer_id)
+-----------------------------FROM CUSTOMER 
+WHERE Grade > (	SELECT AVG(Grade) 
+		FROM CUSTOMER 
+		WHERE City = 'Bangalore');
+
+
+
+
+
+SELECT NAME, COUNT (CUSTOMER_ID)
+FROM SALESMAN S, CUSTOMER C
+WHERE S.SALESMAN_ID = C.SALESMAN_ID
+GROUP BY NAME
+HAVING COUNT (CUSTOMER_ID) > 1;
+
+
+
+
+
+
+SELECT NAME
+FROM SALESMAN S, CUSTOMER C
+WHERE 	S.SALESMAN_ID = C.SALESMAN_ID AND 
+	S.CITY = C.CUST_CITY
+UNION
+SELECT NAME
+FROM SALESMAN
+WHERE SALESMAN_ID NOT IN
+	( SELECT S1.SALESMAN_ID 
+	  FROM SALESMAN S1, CUSTOMER C1
+	  WHERE S1.SALESMAN_ID = C.SALESMAN_ID AND 
+	  S1.CITY = C1.CUST_CITY );
+
+
+
+
+
+CREATE VIEW SALES_ORDER AS
+SELECT SALESMAN_ID, PURCHASE_AMT
+FROM ORDERS 
+WHERE PURCHASE_AMT = (
+			SELECT PURCHASE_AMT FROM ORDERS
+			WHERE ORDER_DATE = ‘05-JUN-2020’ 
+		      );
+
+
+
+
+DELETE FROM ORDERS 
+	WHERE Salesman_id = 1000;
+
+
+
+
+============================================================================================================================
+"03.Consider the following schema for a Movie Database"
+============================================================================================================================
+
+CREATE TABLE ACTOR (
+    Act_id INT PRIMARY KEY,
+    Act_Name  CHAR(20) NOT NULL,
+    Act_Gender CHAR(10)
+);
+
+CREATE TABLE DIRECTOR (
+    Dir_id INT PRIMARY KEY,
+    Dir_Name VARCHAR(255),
+    Dir_Phone VARCHAR(15)
+);
+
+CREATE TABLE MOVIES (
+    Mov_id INT PRIMARY KEY,
+    Mov_Title VARCHAR(255),
+    Mov_Year INT,
+    Mov_Lang VARCHAR(50),
+    Dir_id INT REFERENCES DIRECTOR(Dir_id) ON DELETE CASCADE
+);
+
+CREATE TABLE MOVIE_CAST (
+    Act_id INT REFERENCES ACTOR(Act_id) ON DELETE CASCADE,
+    Mov_id INT REFERENCES MOVIES(Mov_id) ON DELETE CASCADE,
+    Role VARCHAR(255),
+    PRIMARY KEY (Act_id, Mov_id)
+);
+
+CREATE TABLE RATING (
+    Mov_id INT PRIMARY KEY REFERENCES MOVIES(Mov_id) ON DELETE CASCADE,
+    Rev_Stars DECIMAL(5,2)
+);
+
+
+-- Inserting data into ACTOR table --
+
+INSERT INTO ACTOR VALUES (01, 'SAQUIB', 'MALE');
+INSERT INTO ACTOR VALUES (02, 'KARTHIK', 'MALE');
+INSERT INTO ACTOR VALUES (03, 'ADITYA', 'MALE');
+INSERT INTO ACTOR VALUES (04, 'VARSHA', 'FEMALE');
+INSERT INTO ACTOR VALUES (05, 'RUPA', 'FEMALE');
+
+
+-- Inserting data into DIRECTOR table --
+
+INSERT INTO DIRECTOR VALUES (101, 'SANTOSH', 9684769487);
+INSERT INTO DIRECTOR VALUES (102, 'DWARKESH', 9675869487);
+INSERT INTO DIRECTOR VALUES (103, 'LANKESH', 7898768909);
+INSERT INTO DIRECTOR VALUES (104, 'ASHOK', 9789784206);
+INSERT INTO DIRECTOR VALUES (105, 'ASHISH', 9789679780);
+
+
+-- Inserting data into MOVIES table --
+
+INSERT INTO MOVIES VALUES (1001, 'JAMES BOND', 2002, 'ENGLISH', 101);
+INSERT INTO MOVIES VALUES (1002, 'SPONGEBOB', 2017, 'ENGLISH', 102);
+INSERT INTO MOVIES VALUES (1003, 'THANGI GAGI', 2003, 'KANNADA', 102);
+INSERT INTO MOVIES VALUES (1004, 'BIGIL', 2016, 'TAMIL', 103);
+INSERT INTO MOVIES VALUES (1005, 'CARS 2', 2019, 'ENGLISH', 103);
+
+
+-- Inserting data into MOVIE_CAST table --
+
+INSERT INTO MOVIE_CAST VALUES (1, 1001, 'HERO');
+INSERT INTO MOVIE_CAST VALUES (1, 1002, 'PATRICK');
+INSERT INTO MOVIE_CAST VALUES (2, 1004, 'SIDE KICK');
+INSERT INTO MOVIE_CAST VALUES (2, 1001, 'AGENT');
+INSERT INTO MOVIE_CAST VALUES (3, 1005, 'MATER');
+
+
+-- Inserting data into RATING table --
+
+INSERT INTO RATING VALUES (1001, 5);
+INSERT INTO RATING VALUES (1002, 9);
+INSERT INTO RATING VALUES (1003, 8);
+INSERT INTO RATING VALUES (1004, 6);
+INSERT INTO RATING VALUES (1005, 9);
+
+
+-- SQL QUERIES --
+
+
+SELECT MOV_TITLE
+FROM MOVIES M, DIRECTOR D
+WHERE 	D.DIR_ID = M.DIR_ID AND
+	DIR_NAME= 'Mr.Prem'
+
+
+
+
+SELECT MOV_TITLE
+FROM MOVIES M, MOVIE_CAST MC
+WHERE 	M.MOV_ID=MC.MOV_ID AND
+	MC.ACT_ID IN (	SELECT ACT_ID 
+			FROM MOVIE_CAST
+			GROUP BY ACT_ID 
+			HAVING COUNT(MOV_ID)>=2
+		     );
+
+
+
+
+SELECT DISTINCT A.Act_id, A.Act_Name
+FROM ACTOR A
+JOIN MOVIE_CAST MC ON A.Act_id = MC.Act_id
+JOIN MOVIES M ON MC.Mov_id = M.Mov_id
+WHERE 	M.Mov_Year < 2010 AND 
+	M.Mov_Year > 2020
+
+
+
+
+SELECT MOV_TITLE, REV_STARS
+FROM MOVIES M, RATING R
+WHERE 	M.MOV_ID=R.MOV_ID AND
+	REV_STARS >= 1
+ORDER BY MOV_TITLE;
+
+
+
+
+UPDATE RATING
+SET Rev_Stars = 5
+WHERE Mov_id IN (SELECT Mov_id 
+		 FROM MOVIES M, DIRECTOR D 
+		 WHERE M.Dir_id = D.Dir_id AND
+		 D.Dir_Name = 'Prashanth Neel')
+
+
+
+============================================================================================================================
+"04.Consider the following schema for a College Database"
+============================================================================================================================
+CREATE TABLE STUDENT (
+	USN VARCHAR(15) PRIMARY KEY,
+	SNAME CHAR(20),
+	ADDRESS VARCHAR(50),
+	PHONE DECIMAL(10,0),
+	GENDER CHAR(10) 
+);
+
+
+CREATE TABLE SEMSEC (
+	SSID VARCHAR(20) PRIMARY KEY,
+	SEM INT, 
+	SEC CHAR(2)
+);
+
+
+CREATE TABLE CLASS (
+	USN VARCHAR(20) REFERENCES STUDENT (USN) ON DELETE CASCADE,
+	SSID VARCHAR(20) REFERENCES SEMSEC (SSID) ON DELETE CASCADE 
+);
+
+
+CREATE TABLE COURSE (
+	SUBCODE INT PRIMARY KEY,
+	TITLE CHAR (20),
+	SEM INT,
+	CREDITS INT 
+);
+
+
+CREATE TABLE IAMARKS (
+	USN VARCHAR(20) REFERENCES STUDENT(USN) ON DELETE CASCADE,
+	SUBCODE INT, SSID VARCHAR(20),
+	TEST1 INT, TEST2 INT, TEST3 INT,
+	FINALIA DECIMAL(5,2),
+);
+
+
+TABLE STUDENT
+
+INSERT INTO STUDENT VALUES ('1DS19IS049', 'ARJUN', 'BANGALORE', 9535616756, 'MALE');
+INSERT INTO STUDENT VALUES ('1DS19IS022', 'ADITYA', 'BANGALORE', 7896716657, 'MALE');
+INSERT INTO STUDENT VALUES ('1DS19IS017', 'ANEESH', 'MATTUR', 7898676647, 'MALE');
+INSERT INTO STUDENT VALUES ('1DS19IS058', 'VARSHA', 'PUNE', 8978916756, 'FEMALE');
+INSERT INTO STUDENT VALUES ('1DS19IS007', 'RUPA', 'MANGALORE', 9535616756, 'FEMALE');
+
+
+TABLE SEMSEC
+INSERT INTO SEMSEC VALUES ('4A01', 4, 'A');
+INSERT INTO SEMSEC VALUES ('4C02', 4, 'C');
+INSERT INTO SEMSEC VALUES ('8A01', 8, 'A');
+INSERT INTO SEMSEC VALUES ('8C03', 8, 'C');
+INSERT INTO SEMSEC VALUES ('5A01', 5, 'A');
+
+
+TABLE CLASS
+INSERT INTO CLASS VALUES ('1DS19IS049', '8A01');
+INSERT INTO CLASS VALUES ('1DS19IS022', '8A01');
+INSERT INTO CLASS VALUES ('1DS19IS017', '4C02');
+INSERT INTO CLASS VALUES ('1DS19IS058', '4C02');
+INSERT INTO CLASS VALUES ('1DS19IS007', '5A01');
+
+TABLE COURSE
+INSERT INTO COURSE VALUES (1, 'DBMS' ,5, 4);
+INSERT INTO COURSE VALUES (2, 'PHYSICS' ,8, 3);
+INSERT INTO COURSE VALUES (3, 'CHEMISTRY' ,8, 4);
+INSERT INTO COURSE VALUES (4, 'CNCS' ,4, 2);
+INSERT INTO COURSE VALUES (5, 'PP' ,5, 3);
+
+
+TABLE IAMARKS
+INSERT INTO IAMARKS VALUES ('1DS19IS049', 2, '8A01', 19, 18, 20, 0);
+INSERT INTO IAMARKS VALUES ('1DS19IS058', 4, '4C02', 18, 12, 13, 0);
+INSERT INTO IAMARKS VALUES ('1DS19IS022', 2, '8A01', 14, 16, 18, 0);
+INSERT INTO IAMARKS VALUES ('1DS19IS007', 1, '5A01', 18, 16, 7, 0);
+INSERT INTO IAMARKS VALUES ('1DS19IS017', 4, '4C02', 2, 4, 3, 0);
+
+
+
+-- SQL QUERIES --
+
+
+SELECT S1.*
+FROM STUDENT S1, SEMSEC S2, CLASS C
+WHERE 	S1.USN = C.USN AND
+	C.SSID = S2.SSID AND
+	S2.Sem = 4 AND S2.Sec = 'C';
+
+
+
+SELECT S.GENDER, SS.SEM,SS.SEC ,COUNT(GENDER)
+FROM STUDENT S, SEMSEC SS,CLASS C
+WHERE 	S.USN = C.USN AND 
+	C.SSID = SS.SSID
+GROUP BY S.GENDER, SS.SEM,SS.SEC;
+
+
+
+CREATE VIEW IAMARKS_1 AS
+SELECT SUBCODE , TEST1
+FROM IAMARKS WHERE USN = '1DS20IS111';
+SELECT * FROM IAMARKS_1;
+
+
+
+
+UPDATE IAMARKS
+SET FinalIA = (GREATEST(TEST1, TEST2, TEST3) + ((TEST1+TEST2+TEST3) - GREATEST(TEST1, TEST2, TEST3) - LEAST(TEST1, TEST2, TEST3)))/2;
+
+
+
+
+SELECT SS.Sec, S.*, 
+(    CASE
+        WHEN FinalIA BETWEEN 17 AND 20 THEN 'Outstanding'
+        WHEN FinalIA BETWEEN 12 AND 16 THEN 'Average' 
+        ELSE 'Weak'
+     END 
+)
+AS CAT 
+FROM STUDENT S, SEMSEC SS, IAMARKS IA, COURSE SUB
+WHERE 	S.USN = IA.USN AND 
+	SS.SSID = IA.SSID AND
+	SUB.SUBCODE = IA.SUBCODE AND 
+	SUB.SEM = 8;
+
+
+
+
+============================================================================================================================
+"05.Consider the following database for a banking enterprise"
+============================================================================================================================
+
+CREATE TABLE BRANCH (
+    Branch_name VARCHAR(255) PRIMARY KEY,
+    Branch_city VARCHAR(255),
+    Assets Numeric(10,2)
+);
+
+CREATE TABLE ACCOUNT (
+    Accno INT PRIMARY KEY,
+    Branch_name VARCHAR(255) REFERENCES BRANCH(branch_name) ON DELETE CASCADE,
+    Balance Numeric(10,2) 
+);
+
+CREATE TABLE CUSTOMER (
+    Customer_name VARCHAR(255) PRIMARY KEY,
+    Customer_street VARCHAR(255),
+    Customer_city VARCHAR(255)
+);
+
+CREATE TABLE LOAN (
+    Loan_number INT PRIMARY KEY,
+    Branch_name VARCHAR(255) REFERENCES BRANCH(Branch_name) ON DELETE CASCADE,
+    Amount Numeric(10,2) 
+);
+
+CREATE TABLE DEPOSITOR (
+    Customer_name VARCHAR(255) REFERENCES CUSTOMER(Customer_name) ON DELETE CASCADE,
+    Accno INT REFERENCES ACCOUNT(Accno) ON DELETE CASCADE,
+    PRIMARY KEY (Customer_name, Accno) 
+);
+
+CREATE TABLE BORROWER (
+    Customer_name VARCHAR(255) REFERENCES CUSTOMER(Customer_name) ON DELETE CASCADE,
+    Loan_number INT REFERENCES LOAN(Loan_number) ON DELETE CASCADE,
+    PRIMARY KEY (Customer_name, Loan_number)
+);
+
+
+
+
+-- Inserting data into BRANCH table --
+
+INSERT INTO BRANCH VALUES 
+('mgroad','bangalore',20000),
+('borivali','mumbai',2000),
+('banashankari','bangalore',45000),
+('eastwing','bombay',1000),
+('indiranagar','bangalore',500);
+
+-- Inserting data into ACCOUNT table --
+
+INSERT INTO ACCOUNT VALUES
+(4,'borivali', 50000),
+(22,'indiranagar', 500),
+(13, 'indiranagar', 10000),
+(45, 'banashankari', 30000),
+(12, 'mgroad', 200000),
+(15, ‘banashankari’, 25000);
+
+
+-- Inserting data into CUSTOMER table --
+
+INSERT INTO CUSTOMER VALUES
+('Tarun', 'spooner st.', 'bangalore'),
+('saqeeb', 'main road', 'shimoga'),
+('arjun', 'biker st.', 'mumbai'),
+('john', 'waltress. st', 'bangalore'),
+('ashish', 'noName st.', 'bangalore');
+
+
+-- Inserting data into LOAN table --
+
+INSERT INTO LOAN VALUES
+(1, 'borivali', 20000),
+(2, 'borivali', 300000),
+(3, 'mgroad', 4500000),
+(4, 'banashankari', 900000),
+(5, 'mgroad', 400000);
+
+
+-- Inserting data into DEPOSITOR table --
+
+INSERT INTO DEPOSITOR VALUES
+('Tarun', 22), 
+('saqeeb', 13), 
+('arjun', 45), 
+('john', 12),
+('ashish', 4),
+(‘arjun’, 15);
+
+-- Inserting data into BORROWER table --
+
+INSERT INTO BORROWER VALUES
+('Tarun', 2),
+('saqeeb', 3), 
+('saqeeb', 4), 
+('john', 5), 
+('ashish', 1);
+
+
+
+-- SQL QUERIES --
+
+
+
+SELECT D.customer_name
+FROM DEPOSITOR D, ACCOUNT A
+WHERE 	D.Accno = A.Accno AND
+	A.branch_name =  'banashankari'
+GROUP BY D.Customer_name
+HAVING COUNT(D.Accno) >= 2;
+
+
+
+SELECT D.Customer_name
+FROM ACCOUNT A, BRANCH B, DEPOSITOR D
+WHERE	B.Branch_name=A.Branch_name AND
+	A.Accno=D.Accno AND
+	B.Branch_city='mumbai'
+GROUP BY D.Customer_name
+HAVING COUNT(distinct B.Branch_name)=(
+					SELECT COUNT(Branch_name)
+					FROM BRANCH
+					WHERE Branch_city='mumbai');
+
+
+
+
+DELETE FROM ACCOUNT
+WHERE branch_name IN (	SELECT branch_name 
+			FROM BRANCH 
+			WHERE branch_city = 'mumbai');
+select * from ACCOUNT;
+
+
+
+
+SELECT D.Customer_name
+FROM DEPOSITOR D, ACCOUNT A
+WHERE 	D.Accno = A.Accno AND
+ 	A.Branch_name = 'MG ROAD';
+
+
+
+
+SELECT B.Customer_name, L.Loan_number, L.amount
+FROM BORROWER B, LOAN L
+WHERE 	B.Loan_number = L.Loan_number
+	L.Branch_name = 'MG ROAD';
+
+SELECT B.Customer_name
+FROM BORROWER B, LOAN L
+WHERE 	B.Loan_number = L.Loan_number
+	L.Branch_name = 'MG ROAD';
+
+
+
+
+
+
+
+
+
+
